@@ -1,0 +1,39 @@
+---
+title: "6-1-21 Tidy Tuesday"
+output: html_notebook
+---
+```{r, include=FALSE}
+library(tidyverse)
+library(CoordinateCleaner)
+library(rworldmap)
+library(ggrepel)
+```
+
+```{r}
+tidytues <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/summary.csv')
+data(countryref)
+world = subset(countryref, select = c(name, centroid.lon, centroid.lat))
+world %>% distinct(name, .keep_all = TRUE) -> world 
+df = world %>%  right_join(tidytues, by = c("name" = "country"))
+```
+
+````{r}
+ggplot() +
+  geom_polygon(data = worldmap, 
+		aes(x = long, y = lat, group = group),
+		fill = NA, colour = "lightgrey") + 
+	geom_point(data = df,
+		aes(x = centroid.lon, y = centroid.lat, 
+			colour = winner), show.legend = FALSE) +
+	coord_quickmap()+ 
+   theme_void()+
+   geom_text_repel(data = df, 
+                   aes(label = winner, 
+                       x = centroid.lon, 
+                       y = centroid.lat), 
+                   max.overlaps = 25) 
+ggsave("tidytuesSurvivor.png", width = 7, height = 4, units = "in", dpi = 400, limitsize = FALSE)
+```
+
+
+
